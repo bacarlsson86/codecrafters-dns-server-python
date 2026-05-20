@@ -34,6 +34,7 @@ DNS_ANSWER_FIELDS = {
 }
 
 def parse(buf:bytes) -> dict:
+    # print(buf)
     # print(request)
     # make a request object of the format:
     # {headers: dict, question: dict, label_sequence: binary_string}
@@ -43,7 +44,7 @@ def parse(buf:bytes) -> dict:
     return request
 
 def parse_headers(buf:bytes) -> dict:
-    print(buf)
+    # print(buf)
     raw_binary = ''.join(format(byte, '08b') for byte in buf)
     left_bit = 0
     headers = {}
@@ -60,7 +61,7 @@ def parse_headers(buf:bytes) -> dict:
 
 def parse_question(buf:bytes) -> tuple[dict, bytes]:
     parsed_question = {}
-    print(f'Now parsing question {buf}')
+    # print(f'Now parsing question {buf}')
     word_length = int(buf[0])
     first_byte = 1
     words = []
@@ -114,18 +115,18 @@ def create_answer(name: str) -> bytes:
 
 
 def serialize(response: dict) -> bytes:
-    print('Serializing')
+    # print('Serializing')
     total = 0
     header_bytes = 12
-    print('Serializing headers')
+    # print('Serializing headers')
     for header_field, value in response['headers'].items():
         bit_length = DNS_HEADER_FIELDS[header_field]
         total = (total << bit_length) | value
     serialized_header = total.to_bytes(header_bytes, byteorder='big')
 
-    print(f'header {serialized_header}')
-    print(f'question {response['raw_question']}')
-    print(f'answer {response['answer']}')
+    # print(f'header {serialized_header}')
+    # print(f'question {response['raw_question']}')
+    # print(f'answer {response['answer']}')
     return serialized_header + response['raw_question'] + response['answer']
 
 def main():
@@ -135,7 +136,7 @@ def main():
     count = 0
     while True:
         count += 1
-        print(f'Processing message {count}')
+        # print(f'Processing message {count}')
         # ignore first packet per instructions
         if skip_first == 0:
             print('Skipping first message')
@@ -143,7 +144,8 @@ def main():
             continue
 
         try:
-            buf, source = udp_socket.recvfrom(512) # buf is the raw binary, source is the address of the sender
+            buf, source = udp_socket.recvfrom(1024) # buf is the raw binary, source is the address of the sender
+            print(buf)
             response = serialize(handle(parse(buf)))
             # question is returned as received
             print(f'Sending {response}')
