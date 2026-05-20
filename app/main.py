@@ -17,6 +17,7 @@ DNS_HEADER_FIELDS = {
 }
 
 def parse(buf:bytes) -> dict:
+    print(bytes)
     raw_binary = ''.join(format(byte, '08b') for byte in buf)
     left_bit = 0
     request = {}
