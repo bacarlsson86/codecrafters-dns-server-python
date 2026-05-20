@@ -31,6 +31,12 @@ def parse(buf:bytes) -> dict:
         # print(f'{header_field} is {request[header_field]} with length {right_bit - left_bit}')
         left_bit = right_bit
     # print(request)
+    question = buf[12:]
+    length_word = question[0]
+    word = question[1:length_word]
+    print(word)
+    
+
     return(request)
 
 def handle(request: dict) -> dict:
