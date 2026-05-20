@@ -16,6 +16,11 @@ DNS_HEADER_FIELDS = {
     "ARCOUNT": 16,
 }
 
+DNS_QUESTION_FIELDS = {
+    "A": 2,
+    "IN": 2
+}
+
 def parse(buf:bytes) -> dict:
     print(buf)
     raw_binary = ''.join(format(byte, '08b') for byte in buf)
@@ -31,13 +36,25 @@ def parse(buf:bytes) -> dict:
         # print(f'{header_field} is {request[header_field]} with length {right_bit - left_bit}')
         left_bit = right_bit
     # print(request)
-    question = buf[12:]
-    length_word = question[0]
-    word = question[1:length_word]
-    print(word)
+    parse_question(buf[12:])
+    return request
     
-
-    return(request)
+def parse_question(buf):
+    question = {}
+    print(f'Now parsing question {buf}')
+    word_length = int(buf[0])
+    first_byte = 1
+    words = []
+    while word_length != 0:
+        last_byte = first_byte + word_length
+        words.append(buf[first_byte:last_byte])
+        word_length = int(buf[last_byte])
+        first_byte = last_byte + 1
+    question['Name'] = '.'.join(words)
+    question['A'] = buf[first_byte:first_byte+2]
+    question['IN'] = buf[first_byte+2:first_byte+4]
+    print(question)
+    return
 
 def handle(request: dict) -> dict:
     response = {}
