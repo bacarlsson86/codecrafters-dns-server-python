@@ -34,6 +34,7 @@ DNS_ANSWER_FIELDS = {
 }
 
 def parse(buf:bytes) -> dict:
+    # print(buf)
     # print(request)
     # make a request object of the format:
     # {headers: dict, question: dict, label_sequence: binary_string}
@@ -43,7 +44,7 @@ def parse(buf:bytes) -> dict:
     return request
 
 def parse_headers(buf:bytes) -> dict:
-    print(buf)
+    # print(buf)
     raw_binary = ''.join(format(byte, '08b') for byte in buf)
     left_bit = 0
     headers = {}
@@ -143,11 +144,12 @@ def main():
             continue
 
         try:
-            buf, source = udp_socket.recvfrom(512) # buf is the raw binary, source is the address of the sender
-            response = serialize(handle(parse(buf)))
-            # question is returned as received
-            print(f'Sending {response}')
-            udp_socket.sendto(response, source)
+            buf, source = udp_socket.recvfrom(1024) # buf is the raw binary, source is the address of the sender
+            print(buf)
+            # response = serialize(handle(parse(buf)))
+            # # question is returned as received
+            # print(f'Sending {response}')
+            # udp_socket.sendto(response, source)
         except Exception as e:
             print(f"Error receiving data: {e}")
             break
