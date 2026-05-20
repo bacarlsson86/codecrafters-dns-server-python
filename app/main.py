@@ -17,6 +17,7 @@ DNS_HEADER_FIELDS = {
 }
 
 def parse(buf:bytes) -> dict:
+    print(buf)
     raw_binary = ''.join(format(byte, '08b') for byte in buf)
     left_bit = 0
     request = {}
@@ -50,7 +51,6 @@ def serialize(response: dict) -> bytes:
         total = (total << bit_length) | value
     return total.to_bytes(12, byteorder='big')
 
-
 def main():
     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udp_socket.bind(("127.0.0.1", 2053))
@@ -68,7 +68,7 @@ def main():
         try:
             buf, source = udp_socket.recvfrom(512) # buf is the raw binary, source is the address of the sender
             
-            response = serialize(handle(parse(buf)))
+            response = serialize(handle(parse(buf))) + buf[12:]
             print(f'Sending {response}')
             udp_socket.sendto(response, source)
         except Exception as e:
