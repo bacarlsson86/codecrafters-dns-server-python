@@ -82,7 +82,7 @@ def handle(request:dict) -> dict:
     # request is a dict that contains a headers dict, a question dict, and a raw_question bytes value
     response = {}
     response['headers'] = handle_header(request['headers'])
-    
+
     # handle question appropriately
     response['question'] = request['question']
     response['answer'] = create_answer(response['question']['Name'])
@@ -92,10 +92,12 @@ def handle(request:dict) -> dict:
 def handle_header(request_headers: dict) -> dict:
     response_header = {}
     for header_field, value in request_headers.items():
-        if header_field == 'ID':
+        if header_field == 'ID' or header_field == 'OPCODE' or header_field == 'RD':
             response_header[header_field] = value
         elif header_field =='QR' or header_field == 'QDCOUNT' or header_field == 'ANCOUNT':
             response_header[header_field] = 1
+        elif header_field == 'RCODE':
+            response_header[header_field] = 0 if value == 0 else 4
         else:
             response_header[header_field] = 0
     return response_header
