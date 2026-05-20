@@ -34,6 +34,7 @@ DNS_ANSWER_FIELDS = {
 }
 
 def parse(buf:bytes) -> dict:
+    print(buf)
     # print(request)
     # make a request object of the format:
     # {headers: dict, question: dict, label_sequence: binary_string}
