@@ -55,6 +55,8 @@ def serialize(response: dict) -> bytes:
     for header_field, value in response.items():
         bit_length = DNS_HEADER_FIELDS[header_field]
         total = (total << bit_length) | value
+        print(f'After adding {header_field}: {total}')
+    print(total.to_bytes(12, byteorder='big'))
     return total.to_bytes(12, byteorder='big')
 
 def main():
