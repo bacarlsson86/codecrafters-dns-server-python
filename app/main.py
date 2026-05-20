@@ -16,7 +16,12 @@ DNS_HEADER_FIELDS = {
     "ARCOUNT": 16,
 }
 
-def parse(buf:bytes) -> dict:
+DNS_QUESTION_FIELDS = {
+    "A": 2,
+    "IN": 2
+}
+
+def parse(buf:bytes) -> tuple[dict, int]:
     print(buf)
     raw_binary = ''.join(format(byte, '08b') for byte in buf)
     left_bit = 0
@@ -31,13 +36,27 @@ def parse(buf:bytes) -> dict:
         # print(f'{header_field} is {request[header_field]} with length {right_bit - left_bit}')
         left_bit = right_bit
     # print(request)
-    question = buf[12:]
-    length_word = question[0]
-    word = question[1:length_word]
-    print(word)
+    question, end_of_question = parse_question(buf[12:])
+    return request, end_of_question
     
-
-    return(request)
+def parse_question(buf):
+    question = {}
+    print(f'Now parsing question {buf}')
+    word_length = int(buf[0])
+    first_byte = 1
+    words = []
+    while word_length != 0:
+        last_byte = first_byte + word_length
+        words.append(buf[first_byte:last_byte].decode())
+        word_length = int(buf[last_byte])
+        first_byte = last_byte + 1
+    label_interval = (12, first_byte)
+    print(buf[12:first_byte])
+    question['Name'] = '.'.join(words)
+    question['A'] = int(buf[first_byte:first_byte+2])
+    question['IN'] = int(buf[first_byte+2:first_byte+4])
+    end_of_question = first_byte+4
+    return question, end_of_question
 
 def handle(request: dict) -> dict:
     response = {}
@@ -73,8 +92,8 @@ def main():
 
         try:
             buf, source = udp_socket.recvfrom(512) # buf is the raw binary, source is the address of the sender
-            
-            response = serialize(handle(parse(buf))) + buf[12:]
+            response, end_of_question = handle(parse(buf))
+            response = serialize(response) + buf[12:end_of_question]
             print(f'Sending {response}')
             udp_socket.sendto(response, source)
         except Exception as e:
