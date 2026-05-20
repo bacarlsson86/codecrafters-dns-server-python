@@ -17,7 +17,7 @@ DNS_HEADER_FIELDS = {
 }
 
 def parse(buf:bytes) -> dict:
-    print(buf)
+    # print(buf)
     raw_binary = ''.join(format(byte, '08b') for byte in buf)
     left_bit = 0
     request = {}
@@ -34,7 +34,7 @@ def parse(buf:bytes) -> dict:
     question = buf[12:]
     length_word = question[0]
     word = question[1:length_word]
-    print(word)
+    # print(word)
     
 
     return(request)
@@ -55,6 +55,8 @@ def serialize(response: dict) -> bytes:
     for header_field, value in response.items():
         bit_length = DNS_HEADER_FIELDS[header_field]
         total = (total << bit_length) | value
+        print(f'After adding {header_field} value of {value}: {total}')
+    print(total.to_bytes(12, byteorder='big'))
     return total.to_bytes(12, byteorder='big')
 
 def main():
