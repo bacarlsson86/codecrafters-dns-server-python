@@ -1,5 +1,8 @@
 import socket
 
+class DNS_Message(raw){
+
+}
 
 def main():
     # You can use print statements as follows for debugging, they'll be visible when running tests.
@@ -13,7 +16,8 @@ def main():
     while True:
         try:
             buf, source = udp_socket.recvfrom(512)
-    
+            print(buf)
+            print(source)
             response = b""
     
             udp_socket.sendto(response, source)
