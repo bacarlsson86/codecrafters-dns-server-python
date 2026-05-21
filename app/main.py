@@ -39,7 +39,7 @@ def parse(buf:bytes) -> dict:
     # {headers: dict, question: dict, label_sequence: binary_string}
     request = {}
     request['headers'] = parse_headers(buf)
-    request['question'], request['raw_question'] = parse_question(buf[12:])
+    request['question'], request['raw_question'] = parse_question_new_method(buf[12:])
     return request
 
 def parse_headers(buf:bytes) -> dict:
@@ -77,6 +77,19 @@ def parse_question(buf:bytes) -> tuple[dict, bytes]:
     end_of_question = first_byte+4
     raw_question = buf[0:end_of_question]
     return parsed_question, raw_question
+
+def parse_question_new_method(buf:bytes) -> tuple[dict, bytes]:
+    LABEL_TERMINATOR = b"\x00"
+    COMPRESSION_POINTER = b"\xc0"
+    parsed_question = {}
+    offset = 0
+    end_of_label = buf.find(LABEL_TERMINATOR)
+    label = buf[offset:end_of_label]
+    parsed_question['Name'] = label
+    parsed_question['A'] = 1
+    parsed_question['IN'] = 1
+    end_of_question = end_of_label + 5
+    return parsed_question, buf[0:end_of_question]
 
 def handle(request:dict) -> dict:
     # request is a dict that contains a headers dict, a question dict, and a raw_question bytes value
