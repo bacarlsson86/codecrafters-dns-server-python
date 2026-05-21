@@ -43,7 +43,7 @@ def parse(buf:bytes) -> dict:
     return request
 
 def parse_headers(buf:bytes) -> dict:
-    print(buf)
+    # print(buf)
     raw_binary = ''.join(format(byte, '08b') for byte in buf)
     left_bit = 0
     headers = {}
@@ -76,7 +76,24 @@ def parse_question(buf:bytes) -> tuple[dict, bytes]:
     parsed_question['IN'] = int.from_bytes((buf[first_byte+2:first_byte+4]), 'big')
     end_of_question = first_byte+4
     raw_question = buf[0:end_of_question]
+    print(f'Question parsed as {parsed_question}')
+    print(f'End of question {raw_question}')
     return parsed_question, raw_question
+
+def parse_question_new_method(buf:bytes) -> tuple[dict, bytes]:
+    LABEL_TERMINATOR = b"\x00"
+    COMPRESSION_POINTER = b"\xc0"
+    parsed_question = {}
+    offset = 0
+    end_of_label = buf.find(LABEL_TERMINATOR) + 1
+    label = buf[offset:end_of_label]
+    parsed_question['Name'] = label
+    parsed_question['A'] = 1
+    parsed_question['IN'] = 1
+    end_of_question = end_of_label + 4
+    print(f'Question parsed as {parsed_question}')
+    print(f'End of question {buf[0:end_of_question]}')
+    return parsed_question, buf[0:end_of_question]
 
 def handle(request:dict) -> dict:
     # request is a dict that contains a headers dict, a question dict, and a raw_question bytes value
@@ -144,6 +161,7 @@ def main():
 
         try:
             buf, source = udp_socket.recvfrom(512) # buf is the raw binary, source is the address of the sender
+            print(f'Raw request {buf}')
             response = serialize(handle(parse(buf)))
             # question is returned as received
             print(f'Sending {response}')
